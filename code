@@ -1,0 +1,104 @@
+#include <fstream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct grup {
+    int nr;
+    int divizori;
+    vector<int> divi;
+};
+
+int numarDivizori(int n)
+{
+    int exponent = 0;
+    int num = 1;
+
+    while (n % 2 == 0) {
+        exponent++;
+        n /= 2;
+    }
+
+    num *= (exponent + 1);
+
+    for (int d = 3; d * d <= n; d+= 2) {
+        exponent = 0;
+
+        while (n % d == 0) {
+            exponent++;
+            n /= d;
+        }
+
+        num *= (exponent + 1);
+    }
+
+    if (n != 1) {
+        num *= 2;
+    }
+
+    return num;
+}
+
+bool cmp(grup a, grup b) {
+    if (a.divizori > b.divizori) {
+        return true;
+    }
+    else if (a.divizori == b.divizori) {
+        if (a.nr > b.nr) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool visit[201];
+int n, grupe;
+
+int main()
+{
+    ifstream cin("divigrup.in");
+    ofstream cout("divigrup.out");
+
+    cin >> n;
+    grupe = n;
+    vector<grup> vec;
+    vec.resize(n);
+
+    for (int i = 0; i < n; i++) {
+        cin >> vec[i].nr;
+        vec[i].divizori = numarDivizori(vec[i].nr);
+    }
+
+    sort(vec.begin(), vec.end(), cmp);
+
+    for (int i = 0; i < n; i++) {
+        vec[i].divi.emplace_back(vec[i].nr);
+        for (int j = i + 1; j < n; j++) {
+            if (visit[j] == false and vec[i].divizori == vec[j].divizori) {
+                grupe--;
+                vec[i].divi.emplace_back(vec[j].nr);
+                visit[j] = true;
+            }
+        }
+    }
+
+    cout << grupe << '\n';
+
+    for (int i = 0; i < n; i++) {
+        if (visit[i] == false) {
+            cout << vec[i].divi.size() << ' ';
+
+            for (const auto& j : vec[i].divi) {
+                cout << j << ' ';
+            }
+
+            cout << '\n';
+        }
+    }
+
+    return 0;
+}
